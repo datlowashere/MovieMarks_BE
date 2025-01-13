@@ -1,6 +1,7 @@
 const User = require("../models/user_model");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const cloudinary = require("../../config/cloundinary");
 
 require("dotenv").config();
 
@@ -60,9 +61,8 @@ const login = async (req, res) => {
 };
 
 const updateUser = async (req, res) => {
-  const { fullName, username, avatar } = req.body;
+  const { fullName, username } = req.body;
   const authHeader = req.headers["authorization"];
-
   const accessToken = authHeader.split(" ")[1];
 
   try {
@@ -76,7 +76,16 @@ const updateUser = async (req, res) => {
 
     user.fullName = fullName || user.fullName;
     user.username = username || user.username;
-    user.avatar = avatar || user.avatar;
+
+    if (req.file) {
+      const uploadResult = await cloudinary.uploader.upload(req.file.path, {
+        folder: "moviemarks",
+        use_filename: true,
+        unique_filename: false
+      });
+
+      user.avatar = uploadResult.secure_url;
+    }
 
     await user.save();
     res.json({ message: "User information updated successfully.", user });

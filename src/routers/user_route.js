@@ -1,8 +1,10 @@
 const express = require("express");
 const { register, login, updateUser } = require("../app/controllers/user_controller");
-const authenticateToken = require("../middlewares/authentication"); 
+const authenticateToken = require("../middlewares/authentication_token");
+const upload = require("../middlewares/upload");
 
 const router = express.Router();
+
 
 /**
  * @swagger
@@ -84,7 +86,7 @@ router.post("/login", login);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -96,7 +98,8 @@ router.post("/login", login);
  *                 example: johndoe
  *               avatar:
  *                 type: string
- *                 example: "https://example.com/avatar.jpg"
+ *                 format: binary
+ *                 description: Avatar image file
  *     responses:
  *       200:
  *         description: User updated successfully
@@ -107,6 +110,6 @@ router.post("/login", login);
  *       500:
  *         description: Server error
  */
-router.put("/update",authenticateToken, updateUser);
+router.put("/update", authenticateToken, upload.single("avatar"), updateUser);
 
 module.exports = router;
