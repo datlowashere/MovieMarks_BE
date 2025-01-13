@@ -1,14 +1,18 @@
-const http = require('http');
+const express = require("express");
+const bodyParser = require("body-parser");
+const db = require("./src/config/mongoosedb");
+const route = require("./src/routers/index");
+require("dotenv").config();
 
-const hostname = '10.10.51.144';
-const port = 3000;
+db.connect();
 
-const server = http.createServer((req, res) => {
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'text/plain');
-  res.end('Hello, World!\n');
-});
+const app = express();
 
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
+app.use(bodyParser.json());
+route(app);
+
+const PORT = process.env.PORT;
+
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}/api-docs`);
 });
