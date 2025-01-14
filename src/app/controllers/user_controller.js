@@ -1,29 +1,80 @@
 const User = require("../models/user_model");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
+const cloudinary = require("../../config/cloundinary");
 
 require("dotenv").config();
+const otpStore = {}; 
 
-const register = async (req, res) => {
-  const { email, password } = req.body;
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+const requestCode = async (req, res) => {
+  const { email } = req.body;
+  const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
   try {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "Email is already in use." });
+      return res.status(400).json({ message: "Email already exists." });
+    }
+
+    otpStore[email] = {
+      code: verificationCode,
+      expiresAt: Date.now() + 5 * 60 * 1000, 
+    };
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Your Verification Code",
+      text: `Your verification code is: ${verificationCode}`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({ message: "Verification code sent to email." });
+  } catch (error) {
+    res.status(500).json({ message: "Error sending email.", error });
+  }
+};
+const register = async (req, res) => {
+  const { email, password, code } = req.body;
+
+  try {
+    const storedOTP = otpStore[email];
+    if (!storedOTP) {
+      return res.status(400).json({ message: "No verification code found for this email. Please request a new code." });
+    }
+
+    if (storedOTP.code !== code) {
+      return res.status(400).json({ message: "Incorrect verification code." });
+    }
+
+    if (Date.now() > storedOTP.expiresAt) {
+      delete otpStore[email];
+      return res.status(400).json({ message: "Verification code has expired. Please request a new code." });
     }
 
     const username = email.split("@")[0];
-
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new User({
       email,
       username,
-      password: hashedPassword
+      password: hashedPassword,
     });
 
     await newUser.save();
+
+    delete otpStore[email];
+
     res.status(201).json({ message: "Registration successful." });
   } catch (error) {
     res.status(500).json({ message: "Server error.", error });
@@ -60,9 +111,8 @@ const login = async (req, res) => {
 };
 
 const updateUser = async (req, res) => {
-  const { fullName, username, avatar } = req.body;
+  const { fullName, username } = req.body;
   const authHeader = req.headers["authorization"];
-
   const accessToken = authHeader.split(" ")[1];
 
   try {
@@ -76,7 +126,16 @@ const updateUser = async (req, res) => {
 
     user.fullName = fullName || user.fullName;
     user.username = username || user.username;
-    user.avatar = avatar || user.avatar;
+
+    if (req.file) {
+      const uploadResult = await cloudinary.uploader.upload(req.file.path, {
+        folder: "moviemarks",
+        use_filename: true,
+        unique_filename: false
+      });
+
+      user.avatar = uploadResult.secure_url;
+    }
 
     await user.save();
     res.json({ message: "User information updated successfully.", user });
@@ -91,4 +150,4 @@ const updateUser = async (req, res) => {
   }
 };
 
-module.exports = { register, login, updateUser };
+module.exports = {requestCode, register, login, updateUser };

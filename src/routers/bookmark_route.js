@@ -1,6 +1,6 @@
 const express = require("express");
 const { addBookmark, getBookmarksByUser, deleteBookmark } = require("../app/controllers/bookmark_controller");
-const authenticateToken = require("../middlewares/authentication"); 
+const authenticateToken = require("../middlewares/authentication_token"); 
 
 const router = express.Router();
 
