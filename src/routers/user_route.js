@@ -1,5 +1,5 @@
 const express = require("express");
-const { register, login, updateUser } = require("../app/controllers/user_controller");
+const {requestCode, register, login, updateUser } = require("../app/controllers/user_controller");
 const authenticateToken = require("../middlewares/authentication_token");
 const upload = require("../middlewares/upload");
 
@@ -15,12 +15,40 @@ const router = express.Router();
 
 /**
  * @swagger
+ * /sendcode:
+ *   post:
+ *     summary: Send verification code to user's email
+ *     tags:
+ *       - Authentication
+ *     description: Send a one-time verification code (OTP) to the user's email for verification.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: user@example.com
+ *     responses:
+ *       200:
+ *         description: Verification code sent successfully
+ *       400:
+ *         description: Email already in use
+ *       500:
+ *         description: Server error
+ */
+router.post("/sendcode", requestCode);
+
+/**
+ * @swagger
  * /register:
  *   post:
  *     summary: Register a new user
  *     tags:
  *       - Authentication
- *     description: Register a new user with email, full name, username, and password
+ *     description: Registers a new user by verifying the provided OTP (sent to the user's email) and creating an account.
  *     requestBody:
  *       required: true
  *       content:
@@ -34,11 +62,14 @@ const router = express.Router();
  *               password:
  *                 type: string
  *                 example: password123
+ *               code:
+ *                 type: string
+ *                 example: 123456
  *     responses:
  *       201:
  *         description: User registered successfully
  *       400:
- *         description: Email already in use
+ *         description: Invalid or expired verification code
  *       500:
  *         description: Server error
  */
