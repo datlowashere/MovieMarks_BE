@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const bookmarksSchema = new Schema(
+const bookmarkSchema = new Schema(
   {
     userId: {
       type: Schema.Types.ObjectId,
@@ -42,4 +42,4 @@ const bookmarksSchema = new Schema(
   }
 );
 
-module.exports = mongoose.model("bookmarks", bookmarksSchema);
+module.exports = mongoose.model("bookmarks", bookmarkSchema);

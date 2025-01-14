@@ -1,4 +1,4 @@
-const Bookmark = require("../models/bookmarks_model");
+const Bookmark = require("../models/bookmark_model");
 
 const addBookmark = async (req, res) => {
   const { idUser } = req.params; 
