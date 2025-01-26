@@ -9,10 +9,10 @@ const bookmarkSchema = new Schema(
       required: true
     },
     id: {
-      type: String,
+      type: Number,
       required: true
     },
-    posterPath: {
+    poster_path: {
       type: String,
       required: true
     },
@@ -24,13 +24,8 @@ const bookmarkSchema = new Schema(
       type: Number,
       default: 0
     },
-    ratingPoint: {
-      type: Number,
-      default: 0
-    },
-    isRating: {
-      type: Boolean,
-      default: false
+    release_date:{
+      type: Date,
     },
     isBookmark: {
       type: Boolean,

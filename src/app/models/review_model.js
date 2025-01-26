@@ -9,7 +9,7 @@ const reviewSchema = new Schema(
       required: true
     },
     id: {
-      type: String,
+      type: Number,
       required: true
     },
     content: {
@@ -19,6 +19,9 @@ const reviewSchema = new Schema(
     ratingPoint: {
       type: Number,
       default: 0
+    },
+    releaseDate:{
+      type: Date,
     }
   },
   {
