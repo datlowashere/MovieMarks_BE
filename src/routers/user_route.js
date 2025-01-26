@@ -1,5 +1,5 @@
 const express = require("express");
-const {requestCode, register, login, updateUser } = require("../app/controllers/user_controller");
+const {requestCode, register, login, logout, updateUser, getUserInfo } = require("../app/controllers/user_controller");
 const authenticateToken = require("../middlewares/authentication_token");
 const upload = require("../middlewares/upload");
 
@@ -106,6 +106,25 @@ router.post("/register", register);
  */
 router.post("/login", login);
 
+
+/**
+ * @swagger
+ * /logout:
+ *   post:
+ *     summary: Log out a user
+ *     tags:
+ *       - Authentication
+ *     description: Logs out the user by invalidating their access token. Requires an access token in the Authorization header.
+ *     responses:
+ *       200:
+ *         description: Logout successful
+ *       401:
+ *         description: Unauthorized, invalid or missing token
+ *       500:
+ *         description: Server error
+ */
+router.post("/logout", authenticateToken, logout);
+
 /**
  * @swagger
  * /update:
@@ -142,5 +161,51 @@ router.post("/login", login);
  *         description: Server error
  */
 router.put("/update", authenticateToken, upload.single("avatar"), updateUser);
+
+/**
+ * @swagger
+ * /getuserinfo:
+ *   get:
+ *     summary: Get user information
+ *     tags:
+ *       - Authentication
+ *     description: Retrieve the user's information using their access token.
+ *     responses:
+ *       200:
+ *         description: User information retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: User information retrieved successfully.
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                       example: 64b25a4e3fd75a001c2e38b5
+ *                     email:
+ *                       type: string
+ *                       example: user@example.com
+ *                     username:
+ *                       type: string
+ *                       example: johndoe
+ *                     fullName:
+ *                       type: string
+ *                       example: John Doe
+ *                     avatar:
+ *                       type: string
+ *                       example: https://cloudinary.com/image.jpg
+ *       401:
+ *         description: Unauthorized, invalid or missing token
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
+router.get("/getuserinfo", authenticateToken, getUserInfo);
 
 module.exports = router;

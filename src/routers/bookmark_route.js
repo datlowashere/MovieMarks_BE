@@ -1,6 +1,11 @@
 const express = require("express");
-const { addBookmark, getBookmarksByUser, deleteBookmark } = require("../app/controllers/bookmark_controller");
-const authenticateToken = require("../middlewares/authentication_token"); 
+const {
+  addBookmark,
+  getAllBookmarks,
+  getBookmarksByUser,
+  deleteBookmark
+} = require("../app/controllers/bookmark_controller");
+const authenticateToken = require("../middlewares/authentication_token");
 
 const router = express.Router();
 
@@ -13,17 +18,10 @@ const router = express.Router();
 
 /**
  * @swagger
- * /bookmarks/{idUser}/add:
+ * /bookmarks/add:
  *   post:
  *     summary: Add a bookmark
  *     tags: [Bookmarks]
- *     parameters:
- *       - in: path
- *         name: idUser
- *         required: true
- *         schema:
- *           type: string
- *         description: ID of the user
  *     requestBody:
  *       required: true
  *       content:
@@ -31,6 +29,9 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             properties:
+ *               id:
+ *                 type: string
+ *                 example: "movie_123"
  *               posterPath:
  *                 type: string
  *                 example: "https://example.com/poster.jpg"
@@ -40,39 +41,96 @@ const router = express.Router();
  *               popularity:
  *                 type: number
  *                 example: 9.5
- *               ratingPoint:
- *                 type: number
- *                 example: 8.5
- *               isRating:
- *                 type: boolean
- *                 example: true
- *               isBookmark:
- *                 type: boolean
- *                 example: true
+ *               releaseDate:
+ *                 type: string
+ *                 example: "2024-12-01"
  *     responses:
  *       201:
  *         description: Bookmark added successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Bookmark added successfully."
+ *                 bookmark:
+ *                   type: object
+ *                   properties:
+ *                     userId:
+ *                       type: string
+ *                       example: "userId123"
+ *                     id:
+ *                       type: string
+ *                       example: "movie_123"
+ *                     posterPath:
+ *                       type: string
+ *                       example: "https://example.com/poster.jpg"
+ *                     title:
+ *                       type: string
+ *                       example: "Movie Title"
+ *                     popularity:
+ *                       type: number
+ *                       example: 9.5
+ *                     releaseDate:
+ *                       type: string
+ *                       example: "2024-12-01"
  *       400:
  *         description: Validation error
  *       500:
  *         description: Server error
  */
-router.post("/bookmarks/:idUser/add", authenticateToken, addBookmark);
-
+router.post("/bookmarks/add", authenticateToken, addBookmark);
 
 /**
  * @swagger
- * /bookmarks/{idUser}/list:
+ * /bookmarks:
+ *   get:
+ *     summary: Get all bookmarks for a user
+ *     tags: [Bookmarks]
+ *     responses:
+ *       200:
+ *         description: All bookmarks retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "All bookmarks retrieved successfully."
+ *                 bookmarks:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         example: "movie_123"
+ *                       isBookmark:
+ *                         type: boolean
+ *                         example: true
+ *                       userAverageRating:
+ *                         type: string
+ *                         example: "4.25"
+ *                       overallAverageRating:
+ *                         type: string
+ *                         example: "4.15"
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
+router.get("/bookmarks", getAllBookmarks);
+
+/**
+ * @swagger
+ * /bookmarks/list:
  *   get:
  *     summary: Get a paginated list of bookmarks by user ID
  *     tags: [Bookmarks]
  *     parameters:
- *       - in: path
- *         name: idUser
- *         required: true
- *         schema:
- *           type: string
- *         description: ID of the user
  *       - in: query
  *         name: page
  *         required: false
@@ -100,9 +158,9 @@ router.post("/bookmarks/:idUser/add", authenticateToken, addBookmark);
  *                   items:
  *                     type: object
  *                     properties:
- *                       id_bookmark:
+ *                       id:
  *                         type: string
- *                         example: "645a2d3bcd987fa3c1234567"
+ *                         example: "movie_123"
  *                       posterPath:
  *                         type: string
  *                         example: "https://example.com/poster.jpg"
@@ -115,9 +173,6 @@ router.post("/bookmarks/:idUser/add", authenticateToken, addBookmark);
  *                       ratingPoint:
  *                         type: number
  *                         example: 8.5
- *                       isRating:
- *                         type: boolean
- *                         example: true
  *                       isBookmark:
  *                         type: boolean
  *                         example: true
@@ -141,21 +196,21 @@ router.post("/bookmarks/:idUser/add", authenticateToken, addBookmark);
  *       500:
  *         description: Server error
  */
-router.get("/bookmarks/:idUser/list", authenticateToken, getBookmarksByUser);
+router.get("/bookmarks/list", authenticateToken, getBookmarksByUser);
 
 /**
  * @swagger
- * /bookmarks/{idBookmark}/delete:
+ * /bookmarks/{idMovie}/delete:
  *   delete:
- *     summary: Delete a bookmark by ID
+ *     summary: Delete a bookmark by movie ID
  *     tags: [Bookmarks]
  *     parameters:
  *       - in: path
- *         name: idBookmark
+ *         name: idMovie
  *         required: true
  *         schema:
  *           type: string
- *         description: ID of the bookmark to delete
+ *         description: ID of the movie to delete
  *     responses:
  *       200:
  *         description: Bookmark deleted successfully
@@ -164,6 +219,6 @@ router.get("/bookmarks/:idUser/list", authenticateToken, getBookmarksByUser);
  *       500:
  *         description: Server error
  */
-router.delete("/bookmarks/:idBookmark/delete", authenticateToken, deleteBookmark);
+router.delete("/bookmarks/:idMovie/delete", authenticateToken, deleteBookmark);
 
 module.exports = router;
